@@ -1,0 +1,26 @@
+
+name:           imp
+version:        1.0.0.0
+license:        PublicDomain
+cabal-version:  >= 1.6
+stability:      experimental
+category:       Compilers/Interpreters
+synopsis:       An interpreter for a simple imperative language.
+build-type:     Simple
+
+executable imp
+ hs-source-dirs: .
+
+ build-depends: 
+        base,
+        directory       >= 1.2.0,
+        pretty-show     >= 1.6.0,
+        Diff            >= 0.3
+
+ main-is:       Main.hs
+
+ ghc-options:   
+        -Wall -fno-warn-unused-do-bind
+
+ extensions:
+        PatternGuards

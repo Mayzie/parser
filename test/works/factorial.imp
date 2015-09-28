@@ -1,0 +1,24 @@
+
+fun  factorial(n)
+vars cond, tmp
+{       
+        cond = (n == 0);
+
+        if cond 
+        then {  tmp = 1;
+                return tmp;
+        }
+        else {
+                tmp = (n - 1);
+                tmp = (factorial(tmp) * n);
+                return tmp;
+        }
+}
+
+
+fun  main(n)
+vars tmp
+{       
+        tmp = factorial(n);
+        return  tmp;
+}
