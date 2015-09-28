@@ -21,6 +21,7 @@ Did you get stuck, or couldn't work something out?
 ## 1. Install the Haskell Platform.
 
    Current version is 7.10.2
+
    https://www.haskell.org/platform/
 
    If this works you should now have the 'ghc', 'ghci' and 'cabal' commands.
@@ -29,42 +30,47 @@ Did you get stuck, or couldn't work something out?
 
    You can check the current install ghc version:
 
-   $ ghc --version
+   `$ ghc --version`
 
 ## 2. Update the cabal package directory.
 
    This gets the list of available libraries from the online Hackage database.
+
    https://hackage.haskell.org/
 
-   $ cabal update
+   `$ cabal update`
 
 ## 3. Install some extra libraries.
 
-   The template code uses these.
-   The following command downloads them from Hackage.
+    The template code uses these.
 
-   $ cabal install pretty-show
-   $ cabal install Diff
+    The following command downloads them from Hackage.
+
+    `$ cabal install pretty-show`
+
+    `$ cabal install Diff`
 
 ## 4. Build the template code.
 
-   $ cabal configure
-   $ cabal build
+   `$ cabal configure`
+
+   `$ cabal build`
 
 ## 5. Run some tests.
 
    The compiled executable is written to dist/build/imp/imp
 
-   $ dist/build/imp/imp -lex test/works/factorial.imp
+   `$ dist/build/imp/imp -lex test/works/factorial.imp`
 
 ## 6. If you like, install your compiler.
 
-   $ cabal install
+   `$ cabal install`
 
-   The executable will be installed in your system, 
+   The executable will be installed in your system,
    though the exact place depends on your OS.
 
-   On OSX:   /Users/USER/Library/Haskell/bin
-   On Linux: ~/.cabal/bin
+   On OSX: `/Users/USER/Library/Haskell/bin`
+
+   On Linux: `~/.cabal/bin`
 
    Add the correct directory to your $PATH.
