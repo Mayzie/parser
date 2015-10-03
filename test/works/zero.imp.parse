@@ -1,8 +1,0 @@
-Just
-  (Program
-     [ Function
-         (Id "main")
-         []
-         [ Id "tmp" ]
-         (Block [ SAssign (Id "tmp") (XNum 0) , SReturn (Id "tmp") ])
-     ])
