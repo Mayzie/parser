@@ -6,6 +6,7 @@ import qualified Imp.Source.Check               as S
 import qualified Imp.Source.Check.Error         as S
 import qualified Imp.Source.Convert             as S
 import qualified Imp.Core.Execute               as C
+import qualified Imp.Core.Exp                 as T -- For testing only
 
 import qualified Data.Algorithm.Diff            as Diff
 import qualified Data.Algorithm.DiffOutput      as Diff
@@ -72,15 +73,20 @@ main
          -- Execute a file (TODO check if correct).
          ("-execute" : (file : mainArgs))
           | isSuffixOf ".imp" file
-          -> do str     <- readFile file
-                case S.programOfString str of
-                 Nothing -> error "parse error"
-                 Just progSource
-                  -> do let core = S.convertProgram progSource
-                        -- map is needed to convert each argument to Int
-                        let exec = C.executeProgram core (map read mainArgs)
-                        --let out = Text.ppShow exec
-                        showResult exec (file ++ ".execute")
+-- If Task 2 is not done
+            -> do let core = T.Program [(T.Function (T.Id "A") [(T.Id "A")] [(T.Block 1 [(T.IConst (T.Reg 1) 1)])])]
+                  let exec = C.executeProgram core (map read mainArgs)
+                  showResult exec (file ++ ".execute")
+
+-- If Task 2 is done
+--          -> do str     <- readFile file
+--                case S.programOfString str of
+--                 Nothing -> error "parse error"
+--                 Just progSource
+--                  -> do let core = S.convertProgram progSource
+--                        -- map is needed to convert each argument to Int
+--                        let exec = C.executeProgram core (map read mainArgs)
+--                        showResult exec (file ++ ".execute")
 
          _ -> help
 
