@@ -24,7 +24,7 @@ main
 
          -- Lex a file.
          ["-lex",   file]
-          | isSuffixOf ".imp" file 
+          | isSuffixOf ".imp" file
           -> do str     <- readFile file
                 let out = Text.ppShow $ S.lexer str
                 showResult out (file ++ ".lex")
@@ -49,7 +49,7 @@ main
                 case S.programOfString str of
                  Nothing -> error "parse error"
                  Just prog
-                  -> do let out = unlines 
+                  -> do let out = unlines
                                 $ map (\err -> "Error: " ++ S.prettyError err)
                                 $ S.checkProgram prog
                         showResult out (file ++ ".check")
@@ -67,7 +67,18 @@ main
                   -> do let core = S.convertProgram progSource
                         let out  = Text.ppShow core
                         showResult out (file ++ ".convert")
-                
+
+         -- Execute a file (TODO check if correct).
+         ["-execute", file]
+          | isSuffixOf ".imp.convert" file
+          -> do str     <- readFile file
+                case S.execOfString str of
+                 Nothing -> error "parse error"
+                 Just progResult
+                  -> do let result = S.executeSource progResult
+                        let out  = Text.ppShow result
+                        showResult out (file ++ ".execute")
+
          _ -> help
 
 
@@ -81,7 +92,8 @@ help
         , "  imp -lex     <file>        Lex a file."
         , "  imp -parse   <file>        Parse a file."
         , "  imp -check   <file>        Check a file for problems."
-        , "  imp -convert <file>        Convert a file from source to core." ]
+        , "  imp -convert <file>        Convert a file from source to core."
+        , "  imp -execute <file>        Execute a file to retrieve the result." ]
 
 
 -- | Given an result string and the path to a file containing the expected
@@ -89,15 +101,15 @@ help
 --   expected, otherwise just show the expected.
 showResult :: String -> FilePath -> IO ()
 showResult strResult fileExpected
- = do   
+ = do
         putStrLn $ strResult
         exists  <- System.doesFileExist fileExpected
 
         when exists
          $ do   strExpected <- readFile fileExpected
-                
+
                 when (not $ null strExpected)
-                 $ do   let diff    = Diff.ppDiff 
+                 $ do   let diff    = Diff.ppDiff
                                     $ Diff.getGroupedDiff
                                         (lines strResult)
                                         (lines strExpected)

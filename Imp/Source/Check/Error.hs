@@ -10,13 +10,13 @@ data Error
         | ErrorInvalidArgs   String Int
         | ErrorUndefinedVar  String
         | ErrorDuplicateVar  String
-	| ErrorSyntax
+        | ErrorSyntax
 
 -- | Pretty print an error.
 prettyError :: Error -> String
 prettyError err
  = case err of
-        ErrorNoMain     
+        ErrorNoMain
          -> "No main function defined."
         ErrorUndefinedFunc func
          -> "function '" ++ func ++ "' undefined."
