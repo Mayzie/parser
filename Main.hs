@@ -6,7 +6,7 @@ import qualified Imp.Source.Check               as S
 import qualified Imp.Source.Check.Error         as S
 import qualified Imp.Source.Convert             as S
 import qualified Imp.Core.Execute               as C
-import qualified Imp.Core.Exp                 as T -- For testing only
+import qualified Imp.Core.Exp                   as T -- For testing only
 
 import qualified Data.Algorithm.Diff            as Diff
 import qualified Data.Algorithm.DiffOutput      as Diff
@@ -74,7 +74,20 @@ main
          ("-execute" : (file : mainArgs))
           | isSuffixOf ".imp" file
 -- If Task 2 is not done
-            -> do let core = T.Program [(T.Function (T.Id "A") [(T.Id "A")] [(T.Block 1 [(T.IConst (T.Reg 1) 1)])])]
+            -> do let core = T.Program [
+                               (T.Function
+                                 (T.Id "main")
+                                 [(T.Id "n")]
+                                 [(T.Block 0
+                                   [(T.ILoad (T.Reg 1) (T.Id "n")),
+                                     (T.IReturn (T.Reg 1))
+                                   ])
+                                 ])
+--                                ,(T.Function
+--                                 (T.Id "fac")
+--                                 []
+--                                 [])
+                               ]
                   let exec = C.executeProgram core (map read mainArgs)
                   showResult exec (file ++ ".execute")
 
