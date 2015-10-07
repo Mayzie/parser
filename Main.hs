@@ -5,6 +5,7 @@ import qualified Imp.Source.Lexer               as S
 import qualified Imp.Source.Check               as S
 import qualified Imp.Source.Check.Error         as S
 import qualified Imp.Source.Convert             as S
+import qualified Imp.Core.Execute               as C
 
 import qualified Data.Algorithm.Diff            as Diff
 import qualified Data.Algorithm.DiffOutput      as Diff
@@ -69,15 +70,17 @@ main
                         showResult out (file ++ ".convert")
 
          -- Execute a file (TODO check if correct).
-         ["-execute", file]
-          | isSuffixOf ".imp.convert" file
+         ("-execute" : (file : mainArgs))
+          | isSuffixOf ".imp" file
           -> do str     <- readFile file
-                case S.execOfString str of
+                case S.programOfString str of
                  Nothing -> error "parse error"
-                 Just progResult
-                  -> do let result = S.executeSource progResult
-                        let out  = Text.ppShow result
-                        showResult out (file ++ ".execute")
+                 Just progSource
+                  -> do let core = S.convertProgram progSource
+                        -- map is needed to convert each argument to Int
+                        let exec = C.executeProgram core (map read mainArgs)
+                        --let out = Text.ppShow exec
+                        showResult exec (file ++ ".execute")
 
          _ -> help
 

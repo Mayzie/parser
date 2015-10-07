@@ -29,8 +29,3 @@ programOfString str
 exprOfString  :: String -> Maybe Exp
 exprOfString str
  = lexParse PF.expr str
-
--- | Execute the intermediate code (TODO check if correct).
-execOfString :: String -> Maybe Exp
-execOfString str
- = lexParse PF.expr str
