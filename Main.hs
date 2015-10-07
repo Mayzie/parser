@@ -24,7 +24,7 @@ main
 
          -- Lex a file.
          ["-lex",   file]
-          | isSuffixOf ".imp" file 
+          | isSuffixOf ".imp" file
           -> do str     <- readFile file
                 let out = Text.ppShow $ S.lexer str
                 showResult out (file ++ ".lex")
@@ -36,8 +36,11 @@ main
          ["-parse", file]
           | isSuffixOf ".imp" file
           -> do str     <- readFile file
-                let out = Text.ppShow $ S.programOfString str
-                showResult out (file ++ ".parse")
+                case S.programOfString str of
+                 Nothing -> showResult ("Error: " ++ S.prettyError S.ErrorSyntax) (file ++ ".parse")
+                 Just prog
+                  -> do let out = Text.ppShow $ prog
+                        showResult out (file ++ ".parse")
 
           | otherwise
           -> error $ "Cannot parse " ++ file
@@ -47,9 +50,9 @@ main
           | isSuffixOf ".imp" file
           -> do str     <- readFile file
                 case S.programOfString str of
-                 Nothing -> error "parse error"
+                 Nothing -> showResult ("Error: " ++ S.prettyError S.ErrorSyntax) (file ++ ".check")
                  Just prog
-                  -> do let out = unlines 
+                  -> do let out = unlines
                                 $ map (\err -> "Error: " ++ S.prettyError err)
                                 $ S.checkProgram prog
                         showResult out (file ++ ".check")
@@ -62,12 +65,12 @@ main
           | isSuffixOf ".imp" file
           -> do str     <- readFile file
                 case S.programOfString str of
-                 Nothing -> error "parse error"
+                 Nothing -> showResult ("Error: " ++ S.prettyError S.ErrorSyntax) (file ++ ".convert")
                  Just progSource
                   -> do let core = S.convertProgram progSource
                         let out  = Text.ppShow core
                         showResult out (file ++ ".convert")
-                
+
          _ -> help
 
 
@@ -89,15 +92,15 @@ help
 --   expected, otherwise just show the expected.
 showResult :: String -> FilePath -> IO ()
 showResult strResult fileExpected
- = do   
+ = do
         putStrLn $ strResult
         exists  <- System.doesFileExist fileExpected
 
         when exists
          $ do   strExpected <- readFile fileExpected
-                
+
                 when (not $ null strExpected)
-                 $ do   let diff    = Diff.ppDiff 
+                 $ do   let diff    = Diff.ppDiff
                                     $ Diff.getGroupedDiff
                                         (lines strResult)
                                         (lines strExpected)

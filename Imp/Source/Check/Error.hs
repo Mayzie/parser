@@ -1,16 +1,17 @@
 
 module Imp.Source.Check.Error where
+import Imp.Source.Exp
 
 
 -- | Problems we might find in the input program.
 data Error
         = ErrorNoMain
-        | ErrorUndefinedFunc String
-        | ErrorDuplicateFunc String
-        | ErrorInvalidArgs   String Int
-        | ErrorUndefinedVar  String
-        | ErrorDuplicateVar  String
-	| ErrorSyntax
+        | ErrorUndefinedFunc Id
+        | ErrorDuplicateFunc Id
+        | ErrorInvalidArgs   Id Int
+        | ErrorUndefinedVar  Id
+        | ErrorDuplicateVar  Id
+        | ErrorSyntax
 
 -- | Pretty print an error.
 prettyError :: Error -> String
@@ -19,15 +20,14 @@ prettyError err
         ErrorNoMain     
          -> "No main function defined."
         ErrorUndefinedFunc func
-         -> "function '" ++ func ++ "' undefined."
+         -> "function '" ++ (show func) ++ "' undefined."
         ErrorDuplicateFunc func
-         -> "function '" ++ func ++ "' redefined."
+         -> "function '" ++ (show func) ++ "' redefined."
         ErrorInvalidArgs func args
-         -> "function '" ++ func ++ "' expects " ++ (show args) ++ " argument(s)."
+         -> "function '" ++ (show func) ++ "' expects " ++ (show args) ++ " argument(s)."
         ErrorUndefinedVar var
-         -> "function '" ++ var ++ "' undefined."
+         -> "function '" ++ (show var) ++ "' undefined."
         ErrorDuplicateVar var
-         -> "function '" ++ var ++ "' redefined."
+         -> "function '" ++ (show var) ++ "' redefined."
         ErrorSyntax
          -> "Syntax Error."
-        _ -> ""

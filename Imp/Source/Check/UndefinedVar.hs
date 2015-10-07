@@ -1,11 +1,19 @@
 
 module Imp.Source.Check.UndefinedVar where
+import Imp.Source.Check.Common
 import Imp.Source.Check.Error
 import Imp.Source.Exp
 
-
 -- | Check that the program references no undefined variables.
--- ToDo
-checkUndefinedVar :: Program -> [Error]
-checkUndefinedVar (Program funs)
- = []
+checkUndefinedVars :: Program -> [Error]
+checkUndefinedVars (Program []) = []
+checkUndefinedVars (Program functions) = checkUndefinedFuncVars functions
+
+checkUndefinedFuncVars :: [Function] -> [Error]
+checkUndefinedFuncVars [] = []
+checkUndefinedFuncVars (f:functions) = checkUndefinedVar f ++ checkUndefinedFuncVars functions
+ 
+checkUndefinedVar :: Function -> [Error]
+checkUndefinedVar f
+ = let block = map Right $ getBlocks $ getFunctionBlock f
+   in map (ErrorUndefinedVar) (findComplement (getVariables block) (getFunctionVariables f))

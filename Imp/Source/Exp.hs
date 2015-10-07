@@ -10,7 +10,7 @@ data Program
 
 -- | Source Functions.
 data Function
-        = Function Id [Id] [Id] Block
+        = Function Id [Id] [Id] Block  -- Function Id [Arguments] [Variables] Block
         deriving Show
 
 

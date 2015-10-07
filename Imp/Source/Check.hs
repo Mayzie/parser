@@ -17,14 +17,13 @@ import Imp.Source.Check.Syntax
 import Imp.Source.Check.Error
 import Imp.Source.Exp
 
-
 -- | Run all the available semantic checks on a program.
 checkProgram :: Program -> [Error]
 checkProgram program
-        = checkUndefinedFunc  program
-        ++ checkDuplicateFunc program
-        ++ checkInvalidArgs   program
-        ++ checkUndefinedVar  program
-        ++ checkDuplicateVar  program
-        ++ checkMain          program
-        ++ checkSyntax        program
+        = checkUndefinedFuncs  program
+        ++ checkDuplicateFunc  program
+        ++ checkInvalidArgs    program
+        ++ checkUndefinedVars  program
+        ++ checkDuplicateVars  program
+        ++ checkMain           program
+        ++ checkSyntax         program

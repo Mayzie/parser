@@ -1,5 +1,6 @@
 
 module Imp.Source.Check.Main where
+import Imp.Source.Check.Common
 import Imp.Source.Check.Error
 import Imp.Source.Exp
 
@@ -14,8 +15,3 @@ checkMain (Program funs)
    in   if hasMain 
          then []
          else [ErrorNoMain]
-
-
--- | Get the name of a function.
-nameOfFunction :: Function -> Id
-nameOfFunction (Function name _ _ _) = name
