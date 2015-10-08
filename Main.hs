@@ -77,19 +77,19 @@ main
             -> do let core = T.Program [
                                (T.Function
                                  (T.Id "main")
-                                 [(T.Id "a"), (T.Id "b")]
+                                 [(T.Id "n")]
                                  [(T.Block 0
                                    [(T.IConst (T.Reg 1) 6),
                                     (T.IConst (T.Reg 2) 3),
-                                    --(T.IStore (T.Id "m") (T.Reg 1)),
-                                    --(T.ILoad (T.Reg 2) (T.Id "m")),
-                                    (T.IArith T.OpAdd (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                    (T.IArith T.OpSub (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                    (T.IArith T.OpMul (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                    (T.IArith T.OpDiv (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                    (T.IArith T.OpLt  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                    (T.IArith T.OpGt  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                    (T.IArith T.OpEq  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                    --(T.IStore (T.Id "a") (T.Reg 1)),
+                                    --(T.ILoad (T.Reg 2) (T.Id "a")),
+                                    --(T.IArith T.OpAdd (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                    --(T.IArith T.OpSub (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                    --(T.IArith T.OpMul (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                    --(T.IArith T.OpDiv (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                    --(T.IArith T.OpLt  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                    --(T.IArith T.OpGt  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                    --(T.IArith T.OpEq  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
                                      (T.IReturn (T.Reg 2))
                                    ])
                                  ])

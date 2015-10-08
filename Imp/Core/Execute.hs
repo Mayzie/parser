@@ -11,8 +11,8 @@ import qualified Imp.Core.Exp           as C
 -- | Execute a program from the core language (main function)
 executeProgram :: C.Program -> [Int] -> String
 executeProgram (C.Program funs) args
-        = do let search1 = searchFunction funs (C.Id "main")
-             case search1 of
+        = do let search = searchFunction funs (C.Id "main")
+             case search of
                 Just fun
                     -> executeFunction args fun
                 Nothing
@@ -77,10 +77,10 @@ searchBlock (blk : blks) expNum
 
 -- | Execute all instructions
 executeInstrs :: C.Env -> [C.Instr] -> String
-executeInstrs _ [] = "\n" ++ "End"
+executeInstrs _ [] = "\n"
 executeInstrs env (instr : instrs)
         = do let (newEnv, str) = (executeInstr env instr)
-             str ++ "\n" ++ (executeInstrs newEnv instrs)
+             "\n" ++ str ++ (executeInstrs newEnv instrs)
 
 
 -- | Execute the given Instr
@@ -88,7 +88,7 @@ executeInstr :: C.Env -> C.Instr -> (C.Env, String)
 executeInstr (C.Env envId envReg) instr
         = case instr of
             (C.IConst r n)
-                -> do let newEnvReg = iConst envReg r n
+                -> do let newEnvReg = insertValue envReg (r, n)
                       let newEnv = (C.Env envId newEnvReg)
                       let str = "[ " ++ printEnv newEnv
                       (newEnv, str)
@@ -105,19 +105,15 @@ executeInstr (C.Env envId envReg) instr
                       let newEnv = (C.Env envId newEnvReg)
                       let str = "[ " ++ printEnv newEnv
                       (newEnv, str)
+--            (C.Branch r n1 n2)
+--                -> do
             (C.IReturn r)
-                -> do let result = iReturn envReg r
+                -> do let result = searchValue envReg r
                       let str = "Returned: " ++ (show result)
                       ((C.Env envId envReg), str)
             _
                 -> do let str = "Unsupported Instruction"
                       ((C.Env envId envReg), str)
-
-
--- | Stores the given constant in a Register | Tested and works
-iConst :: [(C.Reg, Int)] -> C.Reg -> Int -> [(C.Reg, Int)]
-iConst [] r n = [(r, n)]
-iConst ls r n = insertValue ls (r, n)
 
 
 -- | Loads the given Identifier into the given Register | Tested and works
@@ -134,12 +130,6 @@ iStore (C.Env idLs regLs) v r
         = do let value = searchValue regLs r
              let newIdLs = insertValue idLs (v, value)
              (C.Env newIdLs regLs)
-
-
--- | Returns the value in the given register | Tested and works
-iReturn :: [(C.Reg, Int)] -> C.Reg -> Int
-iReturn [] _ = 0
-iReturn ls r = searchValue ls r
 
 
 ------------------------------------------------------------
