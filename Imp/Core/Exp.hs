@@ -54,3 +54,9 @@ data Id
 data Reg
         = Reg Int
         deriving (Show, Eq)
+
+
+-- | Environment of Registers and Identifiers.
+data Env
+        = Env [(Reg, Int)] [(Id, Int)]
+        deriving (Show, Eq)

@@ -79,7 +79,7 @@ main
                                  (T.Id "main")
                                  [(T.Id "n")]
                                  [(T.Block 0
-                                   [(T.ILoad (T.Reg 1) (T.Id "n")),
+                                   [(T.IConst (T.Reg 1) 5),
                                      (T.IReturn (T.Reg 1))
                                    ])
                                  ])
