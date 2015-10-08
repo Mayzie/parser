@@ -26,8 +26,8 @@ prettyError err
         ErrorInvalidArgs func args
          -> "function '" ++ (show func) ++ "' expects " ++ (show args) ++ " argument(s)."
         ErrorUndefinedVar var
-         -> "function '" ++ (show var) ++ "' undefined."
+         -> "variable '" ++ (show var) ++ "' undefined."
         ErrorDuplicateVar var
-         -> "function '" ++ (show var) ++ "' redefined."
+         -> "variable '" ++ (show var) ++ "' redefined."
         ErrorSyntax
          -> "Syntax Error."

@@ -2,6 +2,26 @@ module Imp.Source.Check.Common where
 import Imp.Source.Exp
 import Data.List
 
+sampleProg :: Program
+sampleProg = Program
+  [ Function
+      (Id "test")
+      [ Id "n" ]
+      [ Id "a" , Id "b" , Id "a" ]
+      (Block
+         [ SAssign (Id "tmp") (XApp (Id "nine") [ Id "x" ])
+         , SReturn (Id "x")
+         ])
+  , Function
+      (Id "main")
+      []
+      [ Id "n" ]
+      (Block [ SAssign (Id "ret") (XNum 0) , SReturn (Id "ret") ])
+  ]
+  
+getFunctions :: Program -> [Function]
+getFunctions (Program functions) = functions
+
 -- | Deletes the n'th element from a list [a]
 -- | Example: deleteAt 5 [1..10]
 -- |          Delete's the 5th element (5) from the list [1..10]
@@ -32,6 +52,10 @@ nameOfFunction (Function name _ _ _) = name
 nameOfFunctions :: [Function] -> [Id]
 nameOfFunctions [] = []
 nameOfFunctions (f:functions) = nameOfFunction f : nameOfFunctions functions
+
+getFunctionBlocks :: [Function] -> [Block]
+getFunctionBlocks [] = []
+getFunctionBlocks (f:functions) = getFunctionBlock f : getFunctionBlocks functions
 
 getFunctionBlock :: Function -> Block
 getFunctionBlock (Function _ _ _ b) = b
@@ -65,18 +89,17 @@ getExpFunctionCall ret@(XApp _ _) = Just ret
 getExpFunctionCall _ = Nothing
 
 -- | Given an Exp (which is an XApp), returns the names of all of the functions
-getFuncNamesFromExp :: [Exp] -> [Id]
+getFuncNamesFromExp :: [Exp] -> [(Id, [Id])]
 getFuncNamesFromExp [] = []
 getFuncNamesFromExp (e:exps) = case getFuncNameFromExp e of
-                               Just x
-                                -> x : getFuncNamesFromExp exps
-                               Nothing
-                                -> getFuncNamesFromExp exps
+                                    Just x
+                                     -> x : getFuncNamesFromExp exps
+                                    Nothing
+                                     -> getFuncNamesFromExp exps
 
-getFuncNameFromExp :: Exp -> Maybe Id
-getFuncNameFromExp (XApp name _) = Just name
+getFuncNameFromExp :: Exp -> Maybe (Id, [Id])
+getFuncNameFromExp (XApp name args) = Just (name, args)
 getFuncNameFromExp _ = Nothing
-
 
 -- | Gets all of the variables from the first argument: `a` (must be either a Function or Block type)
 -- | If `a` is a list of functions, then it returns the variables in that functions environment
@@ -87,7 +110,7 @@ getVariables ((Left (Function _ args vars _)):functions) = (args ++ vars) ++ get
 getVariables ((Right (Block b)):blocks) = getStmtVariables b ++ getVariables blocks
 
 getFunctionVariables :: Function -> [Id]
-getFunctionVariables (Function _ args vars _) = args ++ vars
+getFunctionVariables (Function _ args vars b) = args ++ vars ++ getBlockVariables b
 
 getBlockVariables :: Block -> [Id]
 getBlockVariables (Block block) = getStmtVariables block
@@ -104,10 +127,30 @@ getStmtVariable :: Stmt -> Maybe Id
 getStmtVariable (SAssign x _) = Just x
 getStmtVariable _ = Nothing
 
+-- | Returns all referenced/named variables in a block.
+getRefVariables :: Block -> [Id]
+getRefVariables (Block s) = getRefStmtArrVariables s
+
+getRefStmtArrVariables :: [Stmt] -> [Id]
+getRefStmtArrVariables [] = []
+getRefStmtArrVariables (s:statements) = getRefStmtVariables s ++ getRefStmtArrVariables statements
+
+getRefStmtVariables :: Stmt -> [Id]
+getRefStmtVariables (SIf i b) = i : getRefVariables b
+getRefStmtVariables (SIfElse i bIf bElse) = i : getRefVariables bIf ++ getRefVariables bElse
+getRefStmtVariables (SReturn i) = [i]
+getRefStmtVariables (SAssign i e) = i : getRefExpVariables e
+
+getRefExpVariables :: Exp -> [Id]
+getRefExpVariables (XOp _ e1 e2) = getRefExpVariables e1 ++ getRefExpVariables e2
+getRefExpVariables (XId i) = [i]
+--getRefExpVariables (XApp i a) = i : a
+getRefExpVariables _ = []
+
 -- | Retrieves all block's within a block
 getBlocks :: Block -> [Block]
-getBlocks (Block []) = []
-getBlocks (Block s) = getStatementBlocks s
+getBlocks b@(Block []) = [b]
+getBlocks b@(Block s) = b : getStatementBlocks s
 
 getStatementBlocks :: [Stmt] -> [Block]
 getStatementBlocks [] = []

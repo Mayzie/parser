@@ -12,8 +12,6 @@ import Imp.Source.Check.UndefinedVar
 import Imp.Source.Check.DuplicateVar
 -- Error: No main function defined
 import Imp.Source.Check.Main
--- Syntax Error
-import Imp.Source.Check.Syntax
 import Imp.Source.Check.Error
 import Imp.Source.Exp
 
@@ -26,4 +24,3 @@ checkProgram program
         ++ checkUndefinedVars  program
         ++ checkDuplicateVars  program
         ++ checkMain           program
-        ++ checkSyntax         program

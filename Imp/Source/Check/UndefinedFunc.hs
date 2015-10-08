@@ -8,4 +8,5 @@ import Imp.Source.Exp
 -- | Check that the program references no undefined functions.
 checkUndefinedFuncs :: Program -> [Error]
 checkUndefinedFuncs (Program functions)
- = map (ErrorUndefinedFunc) (findComplement (getFuncNamesFromExp $ getProgramFuncCalls functions) (nameOfFunctions functions))
+ = map (ErrorUndefinedFunc)
+   $ findComplement (map fst $ getFuncNamesFromExp $ getProgramFuncCalls functions) (nameOfFunctions functions)

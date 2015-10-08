@@ -14,6 +14,5 @@ checkUndefinedFuncVars [] = []
 checkUndefinedFuncVars (f:functions) = checkUndefinedVar f ++ checkUndefinedFuncVars functions
  
 checkUndefinedVar :: Function -> [Error]
-checkUndefinedVar f
- = let block = map Right $ getBlocks $ getFunctionBlock f
-   in map (ErrorUndefinedVar) (findComplement (getVariables block) (getFunctionVariables f))
+checkUndefinedVar f@(Function _ _ _ block)
+ = map (ErrorUndefinedVar) (findComplement (getRefVariables block) (getFunctionVariables f))
