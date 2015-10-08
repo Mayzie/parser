@@ -77,46 +77,53 @@ main
          ("-execute" : (file : mainArgs))
           | isSuffixOf ".imp" file
 -- If Task 2 is not done
-            -> do let core = T.Program [
-                               (T.Function (T.Id "main") [(T.Id "n")] [
-                                 (T.Block 0 [
-                                   (T.IConst (T.Reg 1) 2),
-                                   (T.IConst (T.Reg 2) 3),
-                                   --(T.IStore (T.Id "a") (T.Reg 1)),
-                                   --(T.ILoad (T.Reg 2) (T.Id "a")),
-                                   --(T.IArith T.OpAdd (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                   --(T.IArith T.OpSub (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                   --(T.IArith T.OpMul (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                   --(T.IArith T.OpDiv (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                   --(T.IArith T.OpLt  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                   --(T.IArith T.OpGt  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                   --(T.IArith T.OpEq  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                   --(T.IBranch (T.Reg 1) 1 2),
-                                   (T.ICall (T.Reg 2) (T.Id "fac") [(T.Reg 2)]),
-                                   (T.IReturn (T.Reg 2))
-                                 ]),
-                                 (T.Block 1 [
-                                   (T.IReturn (T.Reg 1))
-                                 ]),
-                                 (T.Block 2 [
-                                   (T.IReturn (T.Reg 2))
-                                 ])
-                               ]),
-                               (T.Function (T.Id "fac") [(T.Id "a")] [
-                                 (T.Block 0 [
-                                   (T.IConst (T.Reg 6) 10),
-                                   (T.IReturn (T.Reg 6))
-                                 ])
-                               ])
-                             ]
+            -> do let pro = T.Program [
+                                (T.Function (T.Id "main") [(T.Id "n")] [
+                                    (T.Block 0 [
+                                        (T.IConst (T.Reg 1) 2),
+                                        (T.IConst (T.Reg 2) 3),
+                                        --(T.IStore (T.Id "a") (T.Reg 1)),
+                                        --(T.ILoad (T.Reg 2) (T.Id "a")),
+                                        --(T.IArith T.OpAdd (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                        --(T.IArith T.OpSub (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                        --(T.IArith T.OpMul (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                        --(T.IArith T.OpDiv (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                        --(T.IArith T.OpLt  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                        --(T.IArith T.OpGt  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                        --(T.IArith T.OpEq  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                        --(T.IBranch (T.Reg 1) 1 2),
+                                        (T.ICall (T.Reg 2) (T.Id "fac") [(T.Reg 2)]),
+                                        --(T.ICall (T.Reg 2) (T.Id "fac") []),
+                                        (T.IReturn (T.Reg 2))
+                                    ]),
+                                    (T.Block 1 [
+                                        (T.IReturn (T.Reg 1))
+                                    ]),
+                                    (T.Block 2 [
+                                        (T.IReturn (T.Reg 2))
+                                    ])
+                                ]),
+                                (T.Function (T.Id "fac") [(T.Id "a")] [
+                                    (T.Block 0 [
+                                        (T.IConst (T.Reg 6) 10),
+                                        (T.IReturn (T.Reg 6))
+                                    ])
+                                ])
+                            ]
                   let fac = T.Program [ (T.Function (T.Id "factorial") [(T.Id "n")] [ (T.Block 0 [ (T.ILoad (T.Reg 1) (T.Id "n")), (T.IConst (T.Reg 2) 0), (T.IArith T.OpEq (T.Reg 3) (T.Reg 1) (T.Reg 2)), (T.IStore (T.Id "cond") (T.Reg 3)), (T.ILoad (T.Reg 4) (T.Id "cond")), (T.IBranch (T.Reg 4) 1 2) ]), (T.Block 1 [ (T.IConst (T.Reg 5) 1), (T.IStore (T.Id "tmp") (T.Reg 5)), (T.ILoad (T.Reg 6) (T.Id "tmp")), (T.IReturn (T.Reg 6)) ]), (T.Block 2 [ (T.ILoad (T.Reg 7) (T.Id "n")), (T.IConst (T.Reg 8) 1), (T.IArith T.OpSub (T.Reg 9) (T.Reg 7) (T.Reg 8)), (T.IStore (T.Id "tmp") (T.Reg 9)), (T.ILoad (T.Reg 10) (T.Id "tmp")), (T.ICall (T.Reg 11) (T.Id "factorial") [(T.Reg 10)]), (T.ILoad (T.Reg 12) (T.Id "n")), (T.IArith T.OpMul (T.Reg 13) (T.Reg 11) (T.Reg 12)), (T.IStore (T.Id "tmp") (T.Reg 13)), (T.ILoad (T.Reg 14) (T.Id "tmp")), (T.IReturn (T.Reg 14)) ]) ]), (T.Function (T.Id "main") [(T.Id "n")] [ (T.Block 0 [ (T.ILoad (T.Reg 1) (T.Id "n")), (T.ICall (T.Reg 2) (T.Id "factorial") [(T.Reg 1)]), (T.IStore (T.Id "tmp") (T.Reg 2)), (T.ILoad (T.Reg 3) (T.Id "tmp")), (T.IReturn (T.Reg 3)) ]) ])]
 
-                  let exec = C.executeProgram fac (map read mainArgs)
-                  case (fst exec) of
-                      Just a -> showResult (show a) (file ++ ".execute")
-                      Nothing -> showResult "" (file ++ ".execute")
-                  -- Use this for debugging
-                  --showResult (snd exec) (file ++ ".execute")
+                  let exec = C.executeProgram pro (map read mainArgs)
+                  if isInfixOf "Error" (snd exec)
+                      then showResult (snd exec) (file ++ ".execute")
+                      else case (fst exec) of
+                            Just a
+                                -> do showResult (show a) (file ++ ".execute")
+                                      -- Use this for debugging
+                                      --showResult (snd exec) (file ++ ".execute")
+                            Nothing
+                                -> do showResult "" (file ++ ".execute")
+                                      -- Use this for debugging
+                                      --showResult (snd exec) (file ++ ".execute")
 
 -- If Task 2 is done
 --          -> do str     <- readFile file
