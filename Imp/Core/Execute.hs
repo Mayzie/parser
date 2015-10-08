@@ -52,6 +52,15 @@ executeInstr (C.Env envId envReg) instr
                 -> do let newEnv = iLoad (C.Env envId envReg) r v
                       let str = "[ " ++ printEnv newEnv
                       (newEnv, str)
+            (C.IStore v r)
+                -> do let newEnv = iStore (C.Env envId envReg) v r
+                      let str = "[ " ++ printEnv newEnv
+                      (newEnv, str)
+            (C.IArith op r1 r2 r3)
+                -> do let newEnvReg = iArith envReg op r1 r2 r3
+                      let newEnv = (C.Env envId newEnvReg)
+                      let str = "[ " ++ printEnv newEnv
+                      (newEnv, str)
             (C.IReturn r)
                 -> do let result = iReturn envReg r
                       let str = "Returned: " ++ (show result)
@@ -67,12 +76,20 @@ iConst [] r n = [(r, n)]
 iConst ls r n = insertValue ls (r, n)
 
 
--- | Loads the given Id into the given Register | tested and works
+-- | Loads the given Identifier into the given Register | Tested and works
 iLoad :: C.Env -> C.Reg -> C.Id -> C.Env
 iLoad (C.Env idLs regLs) r v
         = do let value = searchValue idLs v
              let newRegLs = insertValue regLs (r, value)
              (C.Env idLs newRegLs)
+
+
+-- | Stores the given Register into the given Identifier | Tested and works
+iStore :: C.Env -> C.Id -> C.Reg -> C.Env
+iStore (C.Env idLs regLs) v r
+        = do let value = searchValue regLs r
+             let newIdLs = insertValue idLs (v, value)
+             (C.Env newIdLs regLs)
 
 
 -- | Returns the value in the given register | Tested and works
@@ -81,12 +98,41 @@ iReturn [] _ = 0
 iReturn ls r = searchValue ls r
 
 
+-- | Evaluates the operation and returns the new env | Tested and works
+iArith :: [(C.Reg, Int)] -> C.OpArith -> C.Reg -> C.Reg -> C.Reg -> [(C.Reg, Int)]
+iArith regLs op r1 r2 r3
+        = case op of
+            C.OpAdd
+                -> do let value = value2 + value3
+                      insertValue regLs (r1, value)
+            C.OpSub
+                -> do let value = value2 - value3
+                      insertValue regLs (r1, value)
+            C.OpMul
+                -> do let value = value2 * value3
+                      insertValue regLs (r1, value)
+            C.OpDiv
+                -> do let value = div value2 value3
+                      insertValue regLs (r1, value)
+            C.OpLt
+                -> do let value = if value2 < value3 then 1 else 0
+                      insertValue regLs (r1, value)
+            C.OpGt
+                -> do let value = if value2 > value3 then 1 else 0
+                      insertValue regLs (r1, value)
+            C.OpEq
+                -> do let value = if value2 == value3 then 1 else 0
+                      insertValue regLs (r1, value)
+          where value2 = searchValue regLs r2
+                value3 = searchValue regLs r3
+
+
 -- | Combine two environments into one
-combineEnv :: C.Env -> C.Env -> C.Env
-combineEnv (C.Env r1 v1) (C.Env r2 v2)
-        = do let r3 = r1 ++ r2
-             let v3 = v1 ++ v2
-             (C.Env r3 v3)
+--combineEnv :: C.Env -> C.Env -> C.Env
+--combineEnv (C.Env r1 v1) (C.Env r2 v2)
+--        = do let r3 = r1 ++ r2
+--             let v3 = v1 ++ v2
+--             (C.Env r3 v3)
 
 
 -- | Search for the given Function | Tested and works
@@ -131,19 +177,19 @@ insertValue ((x, currNum) : xs) (a1, n)
 
 -- | Print the entire environment | Tested and works
 printEnv :: C.Env -> String
-printEnv (C.Env [] []) = " ]"
+printEnv (C.Env [] []) = "]"
 printEnv (C.Env [] (reg : envReg)) = printReg reg ++ (printEnv (C.Env [] envReg))
 printEnv (C.Env (var : envId) envReg) = printId var ++ (printEnv (C.Env envId envReg))
 
 
 -- | Print a single Register | Tested and works
 printReg :: (C.Reg, Int) -> String
-printReg ((C.Reg r), n) = "(r" ++ (show r) ++ ", " ++ (show n) ++ "),"
+printReg ((C.Reg r), n) = "(r" ++ (show r) ++ ", " ++ (show n) ++ "), "
 
 
--- | Print a single Identifier
+-- | Print a single Identifier | Tested and works
 printId :: (C.Id, Int) -> String
-printId ((C.Id v), n) = "(" ++ (show v) ++ ", " ++ (show n) ++ "),"
+printId ((C.Id v), n) = "(" ++ v ++ ", " ++ (show n) ++ "), "
 
 
 -- | Print the given Register or Identifier | Not working
