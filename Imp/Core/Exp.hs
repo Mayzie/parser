@@ -4,9 +4,20 @@ module Imp.Core.Exp where
 
 -- | Core programs.
 data Program
-        = Program
+        = Program [Function]
         deriving Show
-        -- this isn't finished.
+
+
+-- | Core Functions.
+data Function
+        = Function Id [Id] [Block]
+        deriving Show
+
+
+-- | Core Blocks.
+data Block
+        = Block Int [Instr]
+        deriving Show
 
 
 -- | Instructions.
@@ -26,6 +37,7 @@ data OpArith
         = OpAdd
         | OpSub
         | OpMul
+        | OpDiv
         | OpLt
         | OpGt
         | OpEq
@@ -41,4 +53,10 @@ data Id
 -- | Register numbers.
 data Reg
         = Reg Int
+        deriving (Show, Eq)
+
+
+-- | Environment of Registers and Identifiers.
+data Env
+        = Env [(Id, Int)] [(Reg, Int)]
         deriving (Show, Eq)

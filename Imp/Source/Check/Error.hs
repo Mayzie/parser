@@ -17,7 +17,7 @@ data Error
 prettyError :: Error -> String
 prettyError err
  = case err of
-        ErrorNoMain     
+        ErrorNoMain
          -> "No main function defined."
         ErrorUndefinedFunc func
          -> "function '" ++ (show func) ++ "' undefined."
