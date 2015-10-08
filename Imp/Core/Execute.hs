@@ -3,6 +3,9 @@ module Imp.Core.Execute where
 import qualified Imp.Core.Exp           as C
 
 
+import Data.List
+
+
 ------------------------------------------------------------
 -- Program related
 ------------------------------------------------------------
@@ -14,7 +17,7 @@ executeProgram (C.Program funs) args
         = do let search = searchFunction funs (C.Id "main")
              case search of
                 Just fun
-                    -> executeFunction args fun
+                    -> executeFunction funs args fun
                 Nothing
                     -> "Main not found"
 
@@ -25,14 +28,14 @@ executeProgram (C.Program funs) args
 
 
 -- | Execute the given Function
-executeFunction :: [Int] -> C.Function -> String
-executeFunction args (C.Function _ funArgs blks)
+executeFunction :: [C.Function] -> [Int] -> C.Function -> String
+executeFunction funs args (C.Function _ funArgs blks)
         = do let newIdLs = zip funArgs args     -- TODO: Error checking for too few/many args
              let newEnv = (C.Env newIdLs [])
              let search = searchBlock blks 0
              case search of
                 Just blk
-                    -> executeBlock newEnv blk
+                    -> executeBlock funs blks newEnv blk
                 _
                     -> "Block 0 not found, or problems"
 
@@ -54,9 +57,9 @@ searchFunction (fun : funs) (C.Id expName)
 
 
 -- | Execute the given Block
-executeBlock :: C.Env -> C.Block -> String
-executeBlock env (C.Block _ instrs)
-        = executeInstrs env instrs
+executeBlock :: [C.Function] -> [C.Block] -> C.Env -> C.Block -> String
+executeBlock funs blks env (C.Block _ instrs)
+        = executeInstrs funs blks env instrs
 
 
 -- | Search for the given Block | Tested and works
@@ -76,16 +79,18 @@ searchBlock (blk : blks) expNum
 
 
 -- | Execute all instructions
-executeInstrs :: C.Env -> [C.Instr] -> String
-executeInstrs _ [] = "\n"
-executeInstrs env (instr : instrs)
-        = do let (newEnv, str) = (executeInstr env instr)
-             "\n" ++ str ++ (executeInstrs newEnv instrs)
+executeInstrs :: [C.Function] -> [C.Block] -> C.Env -> [C.Instr] -> String
+executeInstrs _ _ _ [] = "\n"     -- TODO: Change to send error because no more instrs
+executeInstrs funs blks env (instr : instrs)
+        = do let (newEnv, str) = (executeInstr funs blks env instr)
+             if (isInfixOf "Returned:" str)
+                 then ("\n" ++ str)
+                 else "\n" ++ str ++ (executeInstrs funs blks newEnv instrs)
 
 
 -- | Execute the given Instr
-executeInstr :: C.Env -> C.Instr -> (C.Env, String)
-executeInstr (C.Env envId envReg) instr
+executeInstr :: [C.Function] -> [C.Block] -> C.Env -> C.Instr -> (C.Env, String)
+executeInstr funs blks (C.Env envId envReg) instr
         = case instr of
             (C.IConst r n)
                 -> do let newEnvReg = insertValue envReg (r, n)
@@ -105,15 +110,19 @@ executeInstr (C.Env envId envReg) instr
                       let newEnv = (C.Env envId newEnvReg)
                       let str = "[ " ++ printEnv newEnv
                       (newEnv, str)
---            (C.Branch r n1 n2)
---                -> do
+            (C.IBranch r n1 n2)
+                -> do let blkNum = if (searchValue envReg r) == 0 then n2 else n1
+                      let str = iBranch funs blks (C.Env envId envReg) blkNum
+                      ((C.Env envId envReg), str)
             (C.IReturn r)
                 -> do let result = searchValue envReg r
                       let str = "Returned: " ++ (show result)
                       ((C.Env envId envReg), str)
-            _
-                -> do let str = "Unsupported Instruction"
-                      ((C.Env envId envReg), str)
+            (C.ICall r v args)
+                -> do let values = map (searchValue envReg) args
+                      let (n, str) = iCall funs values v
+                      let newEnvReg = insertValue envReg (r, n)
+                      ((C.Env envId newEnvReg), str)
 
 
 -- | Loads the given Identifier into the given Register | Tested and works
@@ -130,6 +139,29 @@ iStore (C.Env idLs regLs) v r
         = do let value = searchValue regLs r
              let newIdLs = insertValue idLs (v, value)
              (C.Env newIdLs regLs)
+
+
+-- | Go into the relevant branch
+iBranch :: [C.Function] -> [C.Block] -> C.Env -> Int -> String
+iBranch funs blks env n
+        = do let search = searchBlock blks n
+             let str = "-- branch to block " ++ (show n)
+             case search of
+                 Just blk -> concat [str, executeBlock funs blks env blk]
+                 Nothing -> "Block " ++ (show n) ++ " not found"
+
+
+-- | Go into the relevant function
+iCall :: [C.Function] -> [Int] -> C.Id -> (Int, String)
+iCall funs values v@(C.Id name)
+        = do let search = searchFunction funs v
+             let str1 = "-- calling function " ++ name
+             case search of
+                 Just fun
+                     -> do let str2 = executeFunction funs values fun
+                           --let n = read (last (splitOn " " str2))
+                           (0, concat [str1, str2])
+                 Nothing -> (0, "Function " ++ name ++ " not found")
 
 
 ------------------------------------------------------------

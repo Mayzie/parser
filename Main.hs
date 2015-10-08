@@ -75,29 +75,37 @@ main
           | isSuffixOf ".imp" file
 -- If Task 2 is not done
             -> do let core = T.Program [
-                               (T.Function
-                                 (T.Id "main")
-                                 [(T.Id "n")]
-                                 [(T.Block 0
-                                   [(T.IConst (T.Reg 1) 6),
-                                    (T.IConst (T.Reg 2) 3),
-                                    --(T.IStore (T.Id "a") (T.Reg 1)),
-                                    --(T.ILoad (T.Reg 2) (T.Id "a")),
-                                    --(T.IArith T.OpAdd (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                    --(T.IArith T.OpSub (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                    --(T.IArith T.OpMul (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                    --(T.IArith T.OpDiv (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                    --(T.IArith T.OpLt  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                    --(T.IArith T.OpGt  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                    --(T.IArith T.OpEq  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
-                                     (T.IReturn (T.Reg 2))
-                                   ])
+                               (T.Function (T.Id "main") [(T.Id "n")] [
+                                 (T.Block 0 [
+                                   (T.IConst (T.Reg 1) 2),
+                                   (T.IConst (T.Reg 2) 3),
+                                   --(T.IStore (T.Id "a") (T.Reg 1)),
+                                   --(T.ILoad (T.Reg 2) (T.Id "a")),
+                                   --(T.IArith T.OpAdd (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                   --(T.IArith T.OpSub (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                   --(T.IArith T.OpMul (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                   --(T.IArith T.OpDiv (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                   --(T.IArith T.OpLt  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                   --(T.IArith T.OpGt  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                   --(T.IArith T.OpEq  (T.Reg 3) (T.Reg 1) (T.Reg 2)),
+                                   --(T.IBranch (T.Reg 1) 1 2),
+                                   (T.ICall (T.Reg 1) (T.Id "fac") [(T.Reg 2)]),
+                                   (T.IReturn (T.Reg 2))
+                                 ]),
+                                 (T.Block 1 [
+                                   (T.IReturn (T.Reg 1))
+                                 ]),
+                                 (T.Block 2 [
+                                   (T.IReturn (T.Reg 2))
                                  ])
---                                ,(T.Function
---                                 (T.Id "fac")
---                                 []
---                                 [])
-                               ]
+                               ]),
+                               (T.Function (T.Id "fac") [(T.Id "a")] [
+                                 (T.Block 0 [
+                                   (T.IConst (T.Reg 6) 10),
+                                   (T.IReturn (T.Reg 6))
+                                 ])
+                               ])
+                             ]
                   let exec = C.executeProgram core (map read mainArgs)
                   showResult exec (file ++ ".execute")
 
