@@ -1,8 +1,6 @@
 
 module Imp.Core.Execute where
-import qualified Imp.Core.Exp           as C
-
-
+import Imp.Core.Exp
 import Imp.Core.Check
 
 
@@ -12,15 +10,11 @@ import Imp.Core.Check
 
 
 -- | Execute a program from the core language (main function)
-executeProgram :: C.Program -> [Int] -> (Maybe Int, String)
-executeProgram (C.Program funs) args
-        = do let search = searchFunction funs (C.Id "main")
-             case search of
-                Just fun
-                    -> do let (result, str) = executeFunction funs args fun
-                          (result, checkProgram str)
-                Nothing
-                    -> (Nothing, "Main not found")
+executeProgram :: Program -> [Int] -> (Maybe Int, String)
+executeProgram (Program funs) args
+        = do let fun = searchFunction funs (Id "main")
+             let (result, str) = executeFunction funs args fun
+             (result, checkProgram str)
 
 
 ------------------------------------------------------------
@@ -29,32 +23,24 @@ executeProgram (C.Program funs) args
 
 
 -- | Execute the given Function
-executeFunction :: [C.Function] -> [Int] -> C.Function -> (Maybe Int, String)
-executeFunction funs args (C.Function _ funArgs blks)
+executeFunction :: [Function] -> [Int] -> Function -> (Maybe Int, String)
+executeFunction funs args (Function _ funArgs blks)
         = do let newIdLs = zip funArgs args
              -- Checks if too few/many args were given
              if (length funArgs == length args)
-                 then do let newEnv = (C.Env newIdLs [])
-                         let search = searchBlock blks 0
-                         -- Checks if the specified Block exists
-                         case search of
-                             Just blk
-                                 -> executeBlock funs blks newEnv blk
-                             _
-                                 -- TODO: Remove this
-                                 -> (Nothing, "Block 0 not found, or problems")
+                 then do let newEnv = (Env newIdLs [])
+                         let blk = searchBlock blks 0
+                         executeBlock funs blks newEnv blk
                  else (Nothing, "ErrorInvalidArgs")
 
 
 -- | Search for the given Function | Tested and works
-searchFunction :: [C.Function] -> C.Id -> Maybe C.Function
-searchFunction [] _ = Nothing
-searchFunction (fun : funs) (C.Id expName)
-        = case fun of
-            (C.Function (C.Id actName) _ _)
-                -> if (actName == expName)
-                    then (Just fun)
-                    else searchFunction funs (C.Id expName)
+searchFunction :: [Function] -> Id -> Function
+searchFunction [] v = (Function v [] [])
+searchFunction (fun@(Function (Id actName) _ _) : funs) v@(Id expName)
+        = if (actName == expName)
+            then fun
+            else searchFunction funs v
 
 
 ------------------------------------------------------------
@@ -63,20 +49,18 @@ searchFunction (fun : funs) (C.Id expName)
 
 
 -- | Execute the given Block
-executeBlock :: [C.Function] -> [C.Block] -> C.Env -> C.Block -> (Maybe Int, String)
-executeBlock funs blks env (C.Block _ instrs)
+executeBlock :: [Function] -> [Block] -> Env -> Block -> (Maybe Int, String)
+executeBlock funs blks env (Block _ instrs)
         = executeInstrs funs blks env instrs
 
 
 -- | Search for the given Block | Tested and works
-searchBlock :: [C.Block] -> Int -> Maybe C.Block
-searchBlock [] _ = Nothing
-searchBlock (blk : blks) expNum
-        = case blk of
-            (C.Block actNum _)
-                -> if (actNum == expNum)
-                    then (Just blk)
-                    else searchBlock blks expNum
+searchBlock :: [Block] -> Int -> Block
+searchBlock [] n = (Block n [])
+searchBlock (blk@(Block actNum _) : blks) expNum
+        = if (actNum == expNum)
+            then blk
+            else searchBlock blks expNum
 
 
 ------------------------------------------------------------
@@ -84,8 +68,8 @@ searchBlock (blk : blks) expNum
 ------------------------------------------------------------
 
 
--- | Execute all instructions
-executeInstrs :: [C.Function] -> [C.Block] -> C.Env -> [C.Instr] -> (Maybe Int, String)
+-- | Execute all Instructions
+executeInstrs :: [Function] -> [Block] -> Env -> [Instr] -> (Maybe Int, String)
 executeInstrs _ _ _ [] = (Nothing, "ErrorBlockEndReached")
 executeInstrs funs blks env (instr : instrs)
         = do let (newEnv, result, str) = (executeInstr funs blks env instr)
@@ -97,89 +81,82 @@ executeInstrs funs blks env (instr : instrs)
                            (newRes, "\n" ++ str ++ str2)
 
 
--- | Execute the given Instr
-executeInstr :: [C.Function] -> [C.Block] -> C.Env -> C.Instr -> (C.Env, Maybe Int, String)
-executeInstr funs blks env@(C.Env envId envReg) instr
+-- | Execute the given Instruction
+executeInstr :: [Function] -> [Block] -> Env -> Instr -> (Env, Maybe Int, String)
+executeInstr funs blks env@(Env envId envReg) instr
         = case instr of
-            (C.IConst r n)
+            (IConst r n)
                 -> do let newEnvReg = insertValue envReg (r, n)
-                      let newEnv = (C.Env envId newEnvReg)
+                      let newEnv = (Env envId newEnvReg)
                       let str = "iConst  [ " ++ printEnv newEnv
                       (newEnv, Nothing, str)
-            (C.ILoad r v)
+            (ILoad r v)
                 -> do let (newEnv, err) = iLoad env r v
                       let str = "iLoad   [ " ++ printEnv newEnv ++ err
                       (newEnv, Nothing, str)
-            (C.IStore v r)
+            (IStore v r)
                 -> do let (newEnv, err) = iStore env v r
                       let str = "iStore  [ " ++ printEnv newEnv ++ err
                       (newEnv, Nothing, str)
-            (C.IArith op r1 r2 r3)
+            (IArith op r1 r2 r3)
                 -> do let (_, err2) = searchValue envReg r2
                       let (_, err3) = searchValue envReg r3
                       let newEnvReg = iArith envReg op r1 r2 r3
-                      let newEnv = (C.Env envId newEnvReg)
+                      let newEnv = (Env envId newEnvReg)
                       let str = "iArith  [ " ++ printEnv newEnv ++ err2 ++ err3
                       (newEnv, Nothing, str)
-            (C.IBranch r n1 n2)
+            (IBranch r n1 n2)
                 -> do let blkNum = if fst (searchValue envReg r) == 0 then n2 else n1
                       let (result, str) = iBranch funs blks env blkNum
                       (env, result, str ++ snd (searchValue envReg r))
-            (C.IReturn r)
+            (IReturn r)
                 -> do let (result, err) = searchValue envReg r
                       let str = "Returned: " ++ (show result)
                       (env, Just result, str ++ err)
-            (C.ICall r v args)
+            (ICall r v args)
                 -> do let list = map (searchValue envReg) args
                       let values = foldr (\x -> (++ [(fst x)])) [] list
                       let err = foldr (\x -> (++ (snd x))) "" list
                       let (n, str) = iCall funs values v
                       let newEnvReg = insertValue envReg (r, n)
-                      ((C.Env envId newEnvReg), Nothing, str ++ err)
+                      ((Env envId newEnvReg), Nothing, str ++ err)
 
 
 -- | Loads the given Identifier into the given Register | Tested and works
-iLoad :: C.Env -> C.Reg -> C.Id -> (C.Env, String)
-iLoad (C.Env idLs regLs) r v
+iLoad :: Env -> Reg -> Id -> (Env, String)
+iLoad (Env idLs regLs) r v
         = do let (value, err) = searchValue idLs v
              let newRegLs = insertValue regLs (r, value)
-             ((C.Env idLs newRegLs), err)
+             ((Env idLs newRegLs), err)
 
 
 -- | Stores the given Register into the given Identifier | Tested and works
-iStore :: C.Env -> C.Id -> C.Reg -> (C.Env, String)
-iStore (C.Env idLs regLs) v r
+iStore :: Env -> Id -> Reg -> (Env, String)
+iStore (Env idLs regLs) v r
         = do let (value, err) = searchValue regLs r
              let newIdLs = insertValue idLs (v, value)
-             ((C.Env newIdLs regLs), err)
+             ((Env newIdLs regLs), err)
 
 
 -- | Go into the relevant branch
-iBranch :: [C.Function] -> [C.Block] -> C.Env -> Int -> (Maybe Int, String)
+iBranch :: [Function] -> [Block] -> Env -> Int -> (Maybe Int, String)
 iBranch funs blks env n
-        = do let search = searchBlock blks n
+        = do let blk = searchBlock blks n
              let str = "-- branch to block " ++ (show n)
-             case search of
-                 Just blk
-                     -> do let (result, str2) = executeBlock funs blks env blk
-                           (result, concat [str, str2])
-                 Nothing -> (Nothing, "Block " ++ (show n) ++ " not found")
+             let (result, str2) = executeBlock funs blks env blk
+             (result, concat [str, str2])
 
 
 -- | Go into the relevant function
-iCall :: [C.Function] -> [Int] -> C.Id -> (Int, String)
-iCall funs values v@(C.Id name)
-        = do let search = searchFunction funs v
+iCall :: [Function] -> [Int] -> Id -> (Int, String)
+iCall funs values v@(Id name)
+        = do let fun = searchFunction funs v
              let str1 = "-- calling function " ++ name
-             case search of
-                 Just fun
-                     -> do let (mb, str2) = executeFunction funs values fun
-                           let str3 = concat [str1, str2, "-- returned from " ++ name]
-                           case mb of
-                               Just result -> (result, str3)
-                               Nothing -> (0, str3)
-                 Nothing
-                     -> (-999, "Function " ++ name ++ " not found")
+             let (mb, str2) = executeFunction funs values fun
+             let str3 = concat [str1, str2, "-- returned from " ++ name]
+             case mb of
+                 Just result -> (result, str3)
+                 Nothing -> (0, str3)
 
 
 ------------------------------------------------------------
@@ -188,28 +165,28 @@ iCall funs values v@(C.Id name)
 
 
 -- | Evaluates the operation and returns the new env | Tested and works
-iArith :: [(C.Reg, Int)] -> C.OpArith -> C.Reg -> C.Reg -> C.Reg -> [(C.Reg, Int)]
+iArith :: [(Reg, Int)] -> OpArith -> Reg -> Reg -> Reg -> [(Reg, Int)]
 iArith regLs op r1 r2 r3
         = case op of
-            C.OpAdd
+            OpAdd
                 -> do let value = value2 + value3
                       insertValue regLs (r1, value)
-            C.OpSub
+            OpSub
                 -> do let value = value2 - value3
                       insertValue regLs (r1, value)
-            C.OpMul
+            OpMul
                 -> do let value = value2 * value3
                       insertValue regLs (r1, value)
-            C.OpDiv
+            OpDiv
                 -> do let value = div value2 value3
                       insertValue regLs (r1, value)
-            C.OpLt
+            OpLt
                 -> do let value = if value2 < value3 then 1 else 0
                       insertValue regLs (r1, value)
-            C.OpGt
+            OpGt
                 -> do let value = if value2 > value3 then 1 else 0
                       insertValue regLs (r1, value)
-            C.OpEq
+            OpEq
                 -> do let value = if value2 == value3 then 1 else 0
                       insertValue regLs (r1, value)
           where (value2, _) = searchValue regLs r2
@@ -240,17 +217,17 @@ insertValue ((x, currNum) : xs) (a1, n)
 
 
 -- | Print the entire environment | Tested and works
-printEnv :: C.Env -> String
-printEnv (C.Env [] []) = "]"
-printEnv (C.Env [] (reg : envReg)) = printReg reg ++ (printEnv (C.Env [] envReg))
-printEnv (C.Env (var : envId) envReg) = printId var ++ (printEnv (C.Env envId envReg))
+printEnv :: Env -> String
+printEnv (Env [] []) = "]"
+printEnv (Env [] (reg : envReg)) = printReg reg ++ (printEnv (Env [] envReg))
+printEnv (Env (var : envId) envReg) = printId var ++ (printEnv (Env envId envReg))
 
 
 -- | Print a single Register | Tested and works
-printReg :: (C.Reg, Int) -> String
-printReg ((C.Reg r), n) = "(r" ++ (show r) ++ ", " ++ (show n) ++ "), "
+printReg :: (Reg, Int) -> String
+printReg ((Reg r), n) = "(r" ++ (show r) ++ ", " ++ (show n) ++ "), "
 
 
 -- | Print a single Identifier | Tested and works
-printId :: (C.Id, Int) -> String
-printId ((C.Id v), n) = "(" ++ v ++ ", " ++ (show n) ++ "), "
+printId :: (Id, Int) -> String
+printId ((Id v), n) = "(" ++ v ++ ", " ++ (show n) ++ "), "
