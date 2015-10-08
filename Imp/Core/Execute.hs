@@ -3,34 +3,32 @@ module Imp.Core.Execute where
 import qualified Imp.Core.Exp           as C
 
 
--- | Execute a program from the core language
+-- | Execute a program from the core language (main function)
 executeProgram :: C.Program -> [Int] -> String
 executeProgram (C.Program funs) args
         = do let search1 = searchFunction funs (C.Id "main")
              case search1 of
-                Just (C.Function _ _ blks)
-                    -> do let search2 = searchBlock blks 0
-                          case search2 of
-                              Just (C.Block _ instrs)
-                                  -> executeInstrs (C.Env [] []) instrs
-                              _
-                                  -> "Block 0 not found, or problems"
+                Just fun
+                    -> executeFunction (C.Env [] []) fun
                 Nothing
                     -> "Main not found"
-        -- = "Testing"
-        -- Above is just temporary to make sure the flow works
 
 
 -- | Execute the given Function
-executeFunction :: C.Function -> String
-executeFunction _ = ""
--- Will go through the Function and execute Block 0
+executeFunction :: C.Env -> C.Function -> String
+executeFunction env (C.Function _ _ blks)
+        = do let search = searchBlock blks 0
+             case search of
+                Just blk
+                    -> executeBlock env blk
+                _
+                    -> "Block 0 not found, or problems"
 
 
 -- | Execute the given Block
-executeBlock :: C.Block -> String
-executeBlock _ = ""
--- Will go through the Block and execute each Instr
+executeBlock :: C.Env -> C.Block -> String
+executeBlock env (C.Block _ instrs)
+        = executeInstrs env instrs
 
 
 -- | Execute all instructions
@@ -79,7 +77,7 @@ iLoad (C.Env idLs regLs) r v
 
 -- | Returns the value in the given register | Tested and works
 iReturn :: [(C.Reg, Int)] -> C.Reg -> Int
-iReturn [] r = 0
+iReturn [] _ = 0
 iReturn ls r = searchValue ls r
 
 

@@ -81,7 +81,7 @@ main
                                  [(T.Block 0
                                    [(T.IConst (T.Reg 1) 5),
                                     (T.IConst (T.Reg 2) 3),
-                                    (T.ILoad (T.Reg 1) (T.Id "n")),
+                                    --(T.ILoad (T.Reg 1) (T.Id "n")),
                                      (T.IReturn (T.Reg 1))
                                    ])
                                  ])
