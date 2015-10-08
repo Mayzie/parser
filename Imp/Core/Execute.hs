@@ -3,23 +3,20 @@ module Imp.Core.Execute where
 import qualified Imp.Core.Exp           as C
 
 
---import Data.List
-
-
 ------------------------------------------------------------
 -- Program related
 ------------------------------------------------------------
 
 
 -- | Execute a program from the core language (main function)
-executeProgram :: C.Program -> [Int] -> String
+executeProgram :: C.Program -> [Int] -> (Maybe Int, String)
 executeProgram (C.Program funs) args
         = do let search = searchFunction funs (C.Id "main")
              case search of
                 Just fun
-                    -> snd (executeFunction funs args fun)
+                    -> executeFunction funs args fun
                 Nothing
-                    -> "Main not found"
+                    -> (Nothing, "Main not found")
 
 
 ------------------------------------------------------------
@@ -59,13 +56,7 @@ searchFunction (fun : funs) (C.Id expName)
 -- | Execute the given Block
 executeBlock :: [C.Function] -> [C.Block] -> C.Env -> C.Block -> (Maybe Int, String)
 executeBlock funs blks env (C.Block _ instrs)
---        = executeInstrs funs blks env instrs
-        = do let (result, str) = executeInstrs funs blks env instrs
-             case result of
-                 Just a
-                     -> (result, str)
-                 Nothing
-                     -> (Nothing, str)
+        = executeInstrs funs blks env instrs
 
 
 -- | Search for the given Block | Tested and works
@@ -170,12 +161,10 @@ iCall funs values v@(C.Id name)
              case search of
                  Just fun
                      -> do let (mb, str2) = executeFunction funs values fun
-                           -- TODO: Maybe just return mb, instead of checking
+                           let str3 = concat [str1, str2, "-- returned from " ++ name]
                            case mb of
-                               Just result
-                                   -> (result, concat [str1, str2, "-- returned from " ++ name])
-                               Nothing
-                                   -> (0, concat [str1, str2, "-- returned from " ++ name])
+                               Just result -> (result, str3)
+                               Nothing -> (0, str3)
                  Nothing
                      -> (-999, "Function " ++ name ++ " not found")
 
@@ -219,14 +208,6 @@ iArith regLs op r1 r2 r3
 ------------------------------------------------------------
 
 
--- | Combine two environments into one
---combineEnv :: C.Env -> C.Env -> C.Env
---combineEnv (C.Env r1 v1) (C.Env r2 v2)
---        = do let r3 = r1 ++ r2
---             let v3 = v1 ++ v2
---             (C.Env r3 v3)
-
-
 -- | Return the value in the given Identifier/Register | Tested and works
 searchValue :: Eq a => [(a, Int)] -> a -> Int
 searchValue [] _ = 0
@@ -260,11 +241,3 @@ printReg ((C.Reg r), n) = "(r" ++ (show r) ++ ", " ++ (show n) ++ "), "
 -- | Print a single Identifier | Tested and works
 printId :: (C.Id, Int) -> String
 printId ((C.Id v), n) = "(" ++ v ++ ", " ++ (show n) ++ "), "
-
-
--- | Print the given Register or Identifier | Not working
---printRegOrId :: Eq a => (a, Int) -> String
---printRegOrId (x, n)
---        = case x of
---            (C.Reg r) -> "(r" ++ (show r) ++ ", " ++ (show n) ++ "),"
---            (C.Id v) -> "(" ++ (show v) ++ ", " ++ (show n) ++ "),"
