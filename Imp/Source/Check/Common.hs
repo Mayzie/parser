@@ -110,7 +110,7 @@ getVariables ((Left (Function _ args vars _)):functions) = (args ++ vars) ++ get
 getVariables ((Right (Block b)):blocks) = getStmtVariables b ++ getVariables blocks
 
 getFunctionVariables :: Function -> [Id]
-getFunctionVariables (Function _ args vars b) = args ++ vars ++ getBlockVariables b
+getFunctionVariables (Function _ args vars b) = args ++ vars -- ++ getBlockVariables b
 
 getBlockVariables :: Block -> [Id]
 getBlockVariables (Block block) = getStmtVariables block
@@ -140,11 +140,12 @@ getRefStmtVariables (SIf i b) = i : getRefVariables b
 getRefStmtVariables (SIfElse i bIf bElse) = i : getRefVariables bIf ++ getRefVariables bElse
 getRefStmtVariables (SReturn i) = [i]
 getRefStmtVariables (SAssign i e) = i : getRefExpVariables e
+getRefStmtVariables _ = []
 
 getRefExpVariables :: Exp -> [Id]
 getRefExpVariables (XOp _ e1 e2) = getRefExpVariables e1 ++ getRefExpVariables e2
 getRefExpVariables (XId i) = [i]
---getRefExpVariables (XApp i a) = i : a
+getRefExpVariables (XApp i a) = a
 getRefExpVariables _ = []
 
 -- | Retrieves all block's within a block
