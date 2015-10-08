@@ -59,22 +59,37 @@ executeInstr (C.Env envId envReg) instr
                       ((C.Env envId envReg), str)
 
 
--- | Returns the value in the given register
-iReturn :: [(C.Reg, Int)] -> C.Reg -> Int
-iReturn [] r = 0
-iReturn ((currReg, currNum) : xs) r
-        = if currReg == r
-            then currNum
-            else (iReturn xs r)
-
-
--- | Stores the given value in a register
+-- | Stores the given constant in a Register | Tested and works!
 iConst :: [(C.Reg, Int)] -> C.Reg -> Int -> [(C.Reg, Int)]
 iConst [] r n = [(r, n)]
 iConst ((currReg, currNum) : xs) r n
         = if currReg == r
             then [(r, n)] ++ xs
             else [(currReg, currNum)] ++ (iConst xs r n)
+
+
+-- | Loads the given Id into the given Register
+--iLoad :: C.Env -> C.Reg -> C.Id -> C.Env
+--iLoad [] r v = [(r, 0)]
+--iLoad (C.Env ((currId, currIdNum) : vs) ((currReg, currRegNum) : rs)) r v
+--        = if currReg == r && currId == v
+--            then do let newReg = (r, currIdNum)
+--                    (C.Env ((currId, currIdNum) : vs) (newReg : rs))
+--            else combineEnv (C.Env )
+
+
+-- | Returns the value in the given register | Tested and works!
+iReturn :: [(C.Reg, Int)] -> C.Reg -> Int
+iReturn [] r = 0
+iReturn ls r = searchValue ls r
+
+
+-- | Combine two environments into one
+combineEnv :: C.Env -> C.Env -> C.Env
+combineEnv (C.Env r1 v1) (C.Env r2 v2)
+        = do let r3 = r1 ++ r2
+             let v3 = v1 ++ v2
+             (C.Env r3 v3)
 
 
 -- | Search for the given Function | Tested and works!
@@ -99,9 +114,13 @@ searchBlock (blk : blks) expNum
                     else searchBlock blks expNum
 
 
--- | Search for the given Instr
-searchInstr :: C.Block -> Int -> Maybe C.Instr
-searchInstr _ _ = Nothing
+-- | Return the value in the given Identifier/Register | Tested and works!
+searchValue :: Eq a => [(a, Int)] -> a -> Int
+searchValue [] _ = 0
+searchValue ((x, currNum) : xs) a1
+        = if x == a1
+            then currNum
+            else searchValue xs a1
 
 
 -- | Print the entire environment
