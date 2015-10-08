@@ -58,5 +58,5 @@ data Reg
 
 -- | Environment of Registers and Identifiers.
 data Env
-        = Env [(Reg, Int)] [(Id, Int)]
+        = Env [(Id, Int)] [(Reg, Int)]
         deriving (Show, Eq)

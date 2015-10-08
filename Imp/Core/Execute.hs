@@ -12,7 +12,7 @@ executeProgram (C.Program funs) args
                     -> do let search2 = searchBlock blks 0
                           case search2 of
                               Just (C.Block _ instrs)
-                                  -> executeInstrs [] [] instrs
+                                  -> executeInstrs (C.Env [] []) instrs
                               _
                                   -> "Block 0 not found, or problems"
                 Nothing
@@ -34,25 +34,29 @@ executeBlock _ = ""
 
 
 -- | Execute all instructions
-executeInstrs :: [(C.Reg, Int)] -> [(C.Id, Int)] -> [C.Instr] -> String
-executeInstrs _ _ [] = "\n" ++ "End"
-executeInstrs envReg envId (instr : instrs)
-        = (executeInstr envReg envId instr) ++ "\n" ++ (executeInstrs envReg envId instrs)
+executeInstrs :: C.Env -> [C.Instr] -> String
+executeInstrs _ [] = "\n" ++ "End"
+executeInstrs env (instr : instrs)
+        = do let (newEnv, str) = (executeInstr env instr)
+             str ++ "\n" ++ (executeInstrs newEnv instrs)
 
 
 -- | Execute the given Instr
-executeInstr :: [(C.Reg, Int)] -> [(C.Id, Int)] -> C.Instr -> String
-executeInstr envReg envId instr
+executeInstr :: C.Env -> C.Instr -> (C.Env, String)
+executeInstr (C.Env envId envReg) instr
         = case instr of
             (C.IConst r n)
                 -> do let newEnvReg = iConst envReg r n
-                      "[ " ++ printEnv newEnvReg envId
+                      let newEnv = (C.Env envId newEnvReg)
+                      let str = "[ " ++ printEnv newEnv
+                      (newEnv, str)
             (C.IReturn r)
                 -> do let result = iReturn envReg r
-                      "Returned: " ++ (show result)
+                      let str = "Returned: " ++ (show result)
+                      ((C.Env envId envReg), str)
             _
-                -> "Unsupported Instruction"
--- Will execute the Instr
+                -> do let str = "Unsupported Instruction"
+                      ((C.Env envId envReg), str)
 
 
 -- | Returns the value in the given register
@@ -101,9 +105,25 @@ searchInstr _ _ = Nothing
 
 
 -- | Print the entire environment
-printEnv :: [(C.Reg, Int)] -> [(C.Id, Int)] -> String
-printEnv [] [] = " ]"
-printEnv (((C.Reg r), n) : envReg) []
-        = "(r" ++ (show r) ++ ", " ++ (show n) ++ ")," ++ (printEnv envReg [])
-printEnv envReg (((C.Id v), n) : envId)
-        = "(" ++ v ++ ", " ++ (show n) ++ ")," ++ (printEnv envReg envId)
+printEnv :: C.Env -> String
+printEnv (C.Env [] []) = " ]"
+printEnv (C.Env [] (reg : envReg)) = printReg reg ++ (printEnv (C.Env [] envReg))
+printEnv (C.Env (var : envId) envReg) = printId var ++ (printEnv (C.Env envId envReg))
+
+
+-- | Print a single Register
+printReg :: (C.Reg, Int) -> String
+printReg ((C.Reg r), n) = "(r" ++ (show r) ++ ", " ++ (show n) ++ "),"
+
+
+-- | Print a single Identifier
+printId :: (C.Id, Int) -> String
+printId ((C.Id v), n) = "(" ++ (show v) ++ ", " ++ (show n) ++ "),"
+
+
+-- | Print the given Register or Identifier | Not working
+--printRegOrId :: Eq a => (a, Int) -> String
+--printRegOrId (x, n)
+--        = case x of
+--            (C.Reg r) -> "(r" ++ (show r) ++ ", " ++ (show n) ++ "),"
+--            (C.Id v) -> "(" ++ (show v) ++ ", " ++ (show n) ++ "),"
