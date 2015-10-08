@@ -77,7 +77,7 @@ main
             -> do let core = T.Program [
                                (T.Function
                                  (T.Id "main")
-                                 [(T.Id "n")]
+                                 [(T.Id "a"), (T.Id "b")]
                                  [(T.Block 0
                                    [(T.IConst (T.Reg 1) 6),
                                     (T.IConst (T.Reg 2) 3),

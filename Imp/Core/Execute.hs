@@ -3,32 +3,76 @@ module Imp.Core.Execute where
 import qualified Imp.Core.Exp           as C
 
 
+------------------------------------------------------------
+-- Program related
+------------------------------------------------------------
+
+
 -- | Execute a program from the core language (main function)
 executeProgram :: C.Program -> [Int] -> String
 executeProgram (C.Program funs) args
         = do let search1 = searchFunction funs (C.Id "main")
              case search1 of
                 Just fun
-                    -> executeFunction (C.Env [] []) fun
+                    -> executeFunction args fun
                 Nothing
                     -> "Main not found"
 
 
+------------------------------------------------------------
+-- Function related
+------------------------------------------------------------
+
+
 -- | Execute the given Function
-executeFunction :: C.Env -> C.Function -> String
-executeFunction env (C.Function _ _ blks)
-        = do let search = searchBlock blks 0
+executeFunction :: [Int] -> C.Function -> String
+executeFunction args (C.Function _ funArgs blks)
+        = do let newIdLs = zip funArgs args     -- TODO: Error checking for too few/many args
+             let newEnv = (C.Env newIdLs [])
+             let search = searchBlock blks 0
              case search of
                 Just blk
-                    -> executeBlock env blk
+                    -> executeBlock newEnv blk
                 _
                     -> "Block 0 not found, or problems"
+
+
+-- | Search for the given Function | Tested and works
+searchFunction :: [C.Function] -> C.Id -> Maybe C.Function
+searchFunction [] _ = Nothing
+searchFunction (fun : funs) (C.Id expName)
+        = case fun of
+            (C.Function (C.Id actName) _ _)
+                -> if (actName == expName)
+                    then (Just fun)
+                    else searchFunction funs (C.Id expName)
+
+
+------------------------------------------------------------
+-- Block related
+------------------------------------------------------------
 
 
 -- | Execute the given Block
 executeBlock :: C.Env -> C.Block -> String
 executeBlock env (C.Block _ instrs)
         = executeInstrs env instrs
+
+
+-- | Search for the given Block | Tested and works
+searchBlock :: [C.Block] -> Int -> Maybe C.Block
+searchBlock [] _ = Nothing
+searchBlock (blk : blks) expNum
+        = case blk of
+            (C.Block actNum _)
+                -> if (actNum == expNum)
+                    then (Just blk)
+                    else searchBlock blks expNum
+
+
+------------------------------------------------------------
+-- Instruction related
+------------------------------------------------------------
 
 
 -- | Execute all instructions
@@ -98,6 +142,11 @@ iReturn [] _ = 0
 iReturn ls r = searchValue ls r
 
 
+------------------------------------------------------------
+-- Operation related
+------------------------------------------------------------
+
+
 -- | Evaluates the operation and returns the new env | Tested and works
 iArith :: [(C.Reg, Int)] -> C.OpArith -> C.Reg -> C.Reg -> C.Reg -> [(C.Reg, Int)]
 iArith regLs op r1 r2 r3
@@ -127,34 +176,17 @@ iArith regLs op r1 r2 r3
                 value3 = searchValue regLs r3
 
 
+------------------------------------------------------------
+-- Environment related (Search, Insert, and Print)
+------------------------------------------------------------
+
+
 -- | Combine two environments into one
 --combineEnv :: C.Env -> C.Env -> C.Env
 --combineEnv (C.Env r1 v1) (C.Env r2 v2)
 --        = do let r3 = r1 ++ r2
 --             let v3 = v1 ++ v2
 --             (C.Env r3 v3)
-
-
--- | Search for the given Function | Tested and works
-searchFunction :: [C.Function] -> C.Id -> Maybe C.Function
-searchFunction [] _ = Nothing
-searchFunction (fun : funs) (C.Id expName)
-        = case fun of
-            (C.Function (C.Id actName) _ _)
-                -> if (actName == expName)
-                    then (Just fun)
-                    else searchFunction funs (C.Id expName)
-
-
--- | Search for the given Block | Tested and works
-searchBlock :: [C.Block] -> Int -> Maybe C.Block
-searchBlock [] _ = Nothing
-searchBlock (blk : blks) expNum
-        = case blk of
-            (C.Block actNum _)
-                -> if (actNum == expNum)
-                    then (Just blk)
-                    else searchBlock blks expNum
 
 
 -- | Return the value in the given Identifier/Register | Tested and works
