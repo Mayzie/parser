@@ -83,13 +83,13 @@ convertStatement c@(Counters n r) stmt
                         let c1 = (Counters n (r+1))
                         (c1, instrs, [])
               (S.SIf var blk)
-                  -> do let (c1@(Counters n1 r1), blks) = convertBlock (Counters (n+1) (r+1)) blk
+                  -> do let (c1@(Counters _ _), blks) = convertBlock (Counters (n+1) (r+1)) blk
                         let loadInstr = [(C.ILoad (C.Reg r) (convertId var))]
                         let branchInstr = [(C.IBranch (C.Reg r) (n+1) (n+2))]
                         (c1, loadInstr ++ branchInstr, blks)
               (S.SIfElse var  blk1 blk2)
-                  -> do let (c1@(Counters n1 r1), blks1) = convertBlock (Counters (n+1) (r+1)) blk1
-                        let (c2@(Counters n2 r2), blks2) = convertBlock (Counters (n+2) (r1+1)) blk2
+                  -> do let ((Counters _ r1), blks1) = convertBlock (Counters (n+1) (r+1)) blk1
+                        let (c2@(Counters _ _), blks2) = convertBlock (Counters (n+2) (r1+1)) blk2
                         let loadInstr = [(C.ILoad (C.Reg r) (convertId var))]
                         let branchInstr = [(C.IBranch (C.Reg r) (n+1) (n+2))]
                         (c2, loadInstr ++ branchInstr, blks1 ++ blks2)
@@ -104,10 +104,9 @@ convertExp c@(Counters n r) e
               (S.XId v)
                   -> (c, [(C.ILoad (C.Reg r) (convertId v))])
               (S.XApp name args)
-                  -> do let c1 = (Counters n r)
-                        let (c2@(Counters n2 r2), instrs) = (loadIds c args)
+                  -> do let ((Counters n2 r2), instrs) = (loadIds c args)
                         let instr = (C.ICall (C.Reg r2) (convertId name) (convertArgsReg args r))
-                        (c2, instrs ++ [instr])
+                        ((Counters n2 r2), instrs ++ [instr])
               (S.XOp op e1 e2)
                   -> do let ((Counters _ r1), instrs1) = (convertExp c e1)
                         let c1 = (Counters n (r1+1))
@@ -158,7 +157,7 @@ convertArgsReg ((S.Id _) : args) n = (C.Reg n) : convertArgsReg args (n+1)
 -- | Create instructions to load all Identifiers
 loadIds :: Counters -> [S.Id] -> (Counters, [C.Instr])
 loadIds c [] = (c, [])
-loadIds c@(Counters n r) (i : ids)
+loadIds (Counters n r) (i : ids)
         = do let c1 = (Counters n (r+1))
              let instr = (C.ILoad (C.Reg r) (convertId i))
              let (c2, instrs) = (loadIds c1 ids)

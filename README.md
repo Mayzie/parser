@@ -8,11 +8,17 @@ Name
 
 What tasks did you complete?
 
-* [Describe which tasks you completed]
+* We completed Task 1, Task 2 (most), and Task 3
 
 Did you get stuck, or couldn't work something out?
 
-* [I just can't stop updating]
+* We got a slight error where registers aren't being properly referenced
+(off-by-one error), in some /very/ specific cases (in the if..else statement)
+
+# Running tests
+
+1. `cabal build`
+2. `./test/run_tests.sh dist/build/imp/imp`
 
 -------------------------------------------------------------------------------
 
