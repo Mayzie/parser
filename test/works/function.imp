@@ -1,0 +1,4 @@
+fun main(n) {
+  tmp = 0;
+  return tmp;
+}

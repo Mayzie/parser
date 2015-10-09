@@ -1,0 +1,6 @@
+
+fun  main()
+vars tmp
+{       tmp      = 0;
+        return tmp;
+}

@@ -1,0 +1,28 @@
+Just
+  (Program
+     [ Function
+         (Id "factorial")
+         [ Id "n" ]
+         [ Id "cond" , Id "tmp" ]
+         (Block
+            [ SAssign (Id "cond") (XOp OpEq (XId (Id "n")) (XNum 0))
+            , SIfElse
+                (Id "cond")
+                (Block [ SAssign (Id "tmp") (XNum 1) , SReturn (Id "tmp") ])
+                (Block
+                   [ SAssign (Id "tmp") (XOp OpSub (XId (Id "n")) (XNum 1))
+                   , SAssign
+                       (Id "tmp")
+                       (XOp OpMul (XApp (Id "factorial") [ Id "tmp" ]) (XId (Id "n")))
+                   , SReturn (Id "tmp")
+                   ])
+            ])
+     , Function
+         (Id "main")
+         [ Id "n" ]
+         [ Id "tmp" ]
+         (Block
+            [ SAssign (Id "tmp") (XApp (Id "factorial") [ Id "n" ])
+            , SReturn (Id "tmp")
+            ])
+     ])

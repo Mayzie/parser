@@ -1,0 +1,22 @@
+fun test(n)
+vars a, b, tmp
+{
+  tmp = x;
+  return x;
+}
+
+fun test(n)
+vars a, b, tmp
+{
+  tmp = x;
+  return x;
+}
+
+fun main()
+vars n, ret, tmp
+{
+  tmp = 1;
+  ret = (test(blah, a, b, c) + def);
+  bleh = (ret + tmp);
+  return ret;
+}

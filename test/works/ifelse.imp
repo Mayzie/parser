@@ -1,0 +1,12 @@
+fun main()
+vars a, b, tmp
+{
+  tmp = 0;
+  if tmp then {
+    tmp = 1;
+  } else
+  {
+    tmp = 10;
+  }
+  return tmp;
+}
