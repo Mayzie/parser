@@ -1,0 +1,7 @@
+
+fun  main(n)
+vars tmp
+{       
+		tmp      = (0 == 0);
+        return tmp;
+}

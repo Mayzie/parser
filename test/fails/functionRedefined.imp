@@ -1,0 +1,18 @@
+fun  factorial()
+vars n
+{       
+    return n;
+}
+
+fun  factorial()
+vars n
+{       
+    return n;
+}
+
+fun  main()
+vars tmp
+{       
+    tmp = factorial();
+    return tmp;
+}

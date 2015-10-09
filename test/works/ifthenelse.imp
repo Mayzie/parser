@@ -1,0 +1,14 @@
+fun  main(n)
+vars cond, tmp
+{       
+        cond = (n == 0);
+
+        if cond 
+        then {
+                tmp = 1;
+                return tmp;
+        }
+        else {
+                return tmp;
+        }
+}

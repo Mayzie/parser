@@ -1,0 +1,17 @@
+
+fun  itselfOne(n)
+{       
+        return n;
+}
+
+fun  itselfTwo(n)
+{       
+        return n;
+}
+
+fun  main(n)
+vars tmp
+{       
+        tmp = itselfOne(n);
+        return tmp;
+}

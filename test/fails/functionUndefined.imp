@@ -1,0 +1,6 @@
+fun  main()
+vars tmp
+{       
+        tmp = derp();
+        return tmp;
+}

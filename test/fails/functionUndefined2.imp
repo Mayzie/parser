@@ -1,0 +1,14 @@
+fun derp()
+vars n
+{
+	n = 10;
+	return n;
+}
+
+fun main()
+vars tmp
+{       
+	tmp = derp();
+	tmp = bob();
+	return tmp;
+}

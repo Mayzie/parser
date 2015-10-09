@@ -1,0 +1,6 @@
+fun main()
+vars confusion
+{       
+	confusion = confusion();
+	return confusion;
+}

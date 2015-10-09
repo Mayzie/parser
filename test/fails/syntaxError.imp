@@ -1,0 +1,13 @@
+
+fun  addOne(n)
+{       
+        return n;
+}
+
+
+fun  main(n)
+vars tmp
+{       
+    tmp = (addOne(n) + );
+    return tmp;
+}

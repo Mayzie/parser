@@ -1,0 +1,13 @@
+
+fun  itself(n,n)
+{       
+    return n;
+}
+
+
+fun  main(n)
+vars tmp
+{       
+    tmp = itself(n,n);
+    return tmp;
+}

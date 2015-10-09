@@ -1,0 +1,5 @@
+
+fun  factorial(n)
+{       
+        return n;
+}
