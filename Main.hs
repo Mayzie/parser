@@ -73,10 +73,10 @@ main
                         let out  = Text.ppShow core
                         showResult out (file ++ ".convert")
 
-         -- Execute a file (TODO check if correct).
+         -- Execute a file.
          ("-execute" : (file : mainArgs))
           | isSuffixOf ".imp" file
--- If Task 2 is not done
+{-        -- If Task 2 isn't done.
             -> do let pro = T.Program [
                                 (T.Function (T.Id "main") [(T.Id "n")] [
                                     (T.Block 0 [
@@ -124,16 +124,28 @@ main
                                 -> do showResult "" (file ++ ".execute")
                                       -- Use this for debugging
                                       --showResult (snd exec) (file ++ ".execute")
+---}
 
--- If Task 2 is done
---          -> do str     <- readFile file
---                case S.programOfString str of
---                 Nothing -> error "parse error"
---                 Just progSource
---                  -> do let core = S.convertProgram progSource
---                        -- map is needed to convert each argument to Int
---                        let exec = C.executeProgram core (map read mainArgs)
---                        showResult exec (file ++ ".execute")
+--{-      -- If Task 2 is done.
+          -> do str     <- readFile file
+                case S.programOfString str of
+                 Nothing -> error "parse error"
+                 Just progSource
+                  -> do let core = S.convertProgram progSource
+                        -- map is needed to convert each argument to Int.
+                        let exec = C.executeProgram core (map read mainArgs)
+                        if isInfixOf "Error" (snd exec)
+                            then showResult (snd exec) (file ++ ".execute")
+                            else case (fst exec) of
+                                Just a
+                                    -> do showResult (show a) (file ++ ".execute")
+                                          -- Use this for debugging
+                                          --showResult (snd exec) (file ++ ".execute")
+                                Nothing
+                                    -> do showResult "" (file ++ ".execute")
+                                          -- Use this for debugging
+                                          --showResult (snd exec) (file ++ ".execute")
+---}
 
          _ -> help
 
