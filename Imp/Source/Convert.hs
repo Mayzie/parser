@@ -42,10 +42,10 @@ convertFunction (Counters n r) (S.Function name a _ b)
 
 
 -- | Convert a Block (Source) to a list of Blocks (Core).
-convertBlock :: Counters -> S.Block -> (Int, [C.Block])
+convertBlock :: Counters -> S.Block -> (Counters, [C.Block])
 convertBlock c@(Counters n _) (S.Block statements)
-        = let ((Counters _ r1), instrs, blks) = convertStatements c statements
-          in (r1, ((C.Block n instrs) : blks))
+        = let (c1, instrs, blks) = convertStatements c statements
+          in (c1, ((C.Block n instrs) : blks))
 
 
 -- | Extract the contents of the Block (Core).
@@ -82,7 +82,11 @@ convertStatement c@(Counters n r) stmt
                         let instrs = [loadInstr] ++ [retInstr]
                         let c1 = (Counters n (r+1))
                         (c1, instrs, [])
-              --(S.SIf var blk)
+              (S.SIf var blk)
+                  -> do let (c1@(Counters n1 r1), blks) = convertBlock (Counters (n+1) (r+1)) blk
+                        let loadInstr = [(C.ILoad (C.Reg r) (convertId var))]
+                        let branchInstr = [(C.IBranch (C.Reg r) (n+1) (n+1))]
+                        (c1, loadInstr ++ branchInstr, blks)
               _
                   -> do let instrs = [(C.IReturn (C.Reg r))]
                         let c1 = (Counters n (r+1))
