@@ -2,19 +2,6 @@
 
 # COMP3109 Assignment 2. Compiler Front End
 
-Name
-
-* Daniel Collis, Elie Moreau
-
-What tasks did you complete?
-
-* We completed Task 1, Task 2 (most), and Task 3
-
-Did you get stuck, or couldn't work something out?
-
-* We got a slight error where registers aren't being properly referenced
-(off-by-one error), in some /very/ specific cases (in the if..else statement)
-
 # Running tests
 
 1. `cabal build`
